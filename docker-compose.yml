@@ -3,15 +3,8 @@ version: '3.5'
 services:
   api:
     image: ideafast/wp3api:latest
-    command:
-      [
-        "uvicorn",
-        "api.main:api",
-        "--host",
-        "0.0.0.0",
-        "--port",
-        "8000"
-      ]
     restart: always
     ports:
-      - "8000:8000"
+      - "80:80"
+    environment:
+      APP_MODULE: api.main:api
