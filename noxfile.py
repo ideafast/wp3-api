@@ -5,7 +5,7 @@ import nox
 from nox_poetry import session
 
 nox.options.sessions = "black", "lint", "mypy", "tests"
-LOCATIONS = "wp3_api", "noxfile.py", "cli.py"
+LOCATIONS = "api", "noxfile.py", "cli.py"
 
 
 def install_with_constraints(session: nox.Session, *args: str, **kwargs: Any) -> None:
