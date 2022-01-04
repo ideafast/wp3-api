@@ -1,10 +1,30 @@
 # IDEA-FAST WP3 Public Facing API
 
-A public facing API used to feed the IDEA-FAST Study Dashboard. It includes some functionality embedded in the `IDEAFAST/middleware-service 'consumer'` repository, but has been started from scratch to interface with the `IDEAFAST/ideafast-etl` pipeline and newly set up Dashboard for simplicity and separation of tasks.
+A public facing API used to feed the IDEA-FAST Study Dashboard. It includes some functionality embedded in the `IDEAFAST/middleware-service:consumer` repository, but has been started from scratch to interface with the `IDEAFAST/ideafast-etl` pipeline and newly set up Dashboard for simplicity and separation of tasks.
 
 > The development setup, folder structure, and cli.py share a lot of commonalities with the `IDEAFAST/ideafast-etl` repository.
 
-## Local development
+## Run the API Locally
+
+### Setup
+
+Rename the `.env.example` to `.env` and update the variables/secrets as needed.
+
+### Containerised
+The API is available as a Docker image, and can be spun up with:
+
+```shell
+docker-compose up
+```
+
+Open your browser and try out a few endpoints, e.g.
+- http://localhost:8000/patients
+- http://localhost:8000/docs
+- http://localhost:8000/pipeline
+
+Note that for the pipeline endpoint, the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) docker image also needs to be running, as access is only provided locally.
+
+### CLI
 
 [Poetry](https://python-poetry.org/) is used for dependency management during development and [pyenv](https://github.com/pyenv/pyenv) to manage python installations, so please install both on your local machine. We use python 3.8 by default, so please make sure this is installed via pyenv, e.g.
 
@@ -12,14 +32,17 @@ A public facing API used to feed the IDEA-FAST Study Dashboard. It includes some
 pyenv install 3.8.0 && pyenv global 3.8.0
 ```
 
-Once done, clone the repo to your machine and install dependencies for this project via:
+Once done, clone the repo to your machine, install dependencies for this project, and quickstart the API which will watch for local changes _(useful for during development!)_:
 
 ```shell
 poetry install
-poetry run pre-commit install
+poetry shell
+python api/main.py
 ```
 
-> Note that `click` is a core dependency solely for using the CLI locally, but is actually not required for the Docker image deployment.
+> Note that running `poetry run local` overrides some settings (see [/api/main.py](/api/main.py)) which are normally set in the _docker-compose.yaml_ when running the Docker image.
+
+## Local development
 
 When adding depencies in development, consider if these are for development or needed in production, then run with or without the `--dev` flag:
 ```shell
@@ -27,13 +50,14 @@ poetry add new-dependency
 poetry add new-dependency --dev
 ```
 
-Then, initiate a virtual environment to use those dependencies, running:
+> Note that `click` is a core dependency solely for using the CLI locally, but is actually not required for the Docker image deployment.
+
+Before commiting, be sure to have pre-commit set up
 
 ```shell
-poetry shell
+poetry run pre-commit install
 ```
 
-### Develop
 If you make substantial changes, consider bumping the repo's version, build a new Docker image and pushing it to hub.docker.com:
 
 ```shell
