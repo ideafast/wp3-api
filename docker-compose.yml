@@ -1,5 +1,11 @@
 version: '3.5'
 
+networks:
+  ideafast-etl:
+    external: true
+  web:
+    external: true
+
 services:
   api:
     image: ideafast/wp3api:latest
@@ -8,3 +14,7 @@ services:
       - "80:80"
     environment:
       APP_MODULE: api.main:api
+      WP3API_AIRFLOW_PASS: ${WP3API_AIRFLOW_PASS}
+    networks:
+      - ideafast-etl
+      - web
