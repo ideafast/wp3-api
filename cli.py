@@ -134,5 +134,19 @@ def version() -> None:
     click.echo(f"Docker: {get_latest_docker_tag()}")
 
 
+@cli.command()
+def run_local() -> None:
+    """Run locally with adjusted settings and loaded .envs"""
+    import os
+
+    import uvicorn
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    os.environ["AIRFLOW_SERVER"] = "localhost"
+
+    uvicorn.run("api.main:api", host="0.0.0.0", port=8000, reload=True)  # noqa: S104
+
+
 if __name__ == "__main__":
     cli()
