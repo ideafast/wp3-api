@@ -34,7 +34,6 @@ build = "cli:build"
 version = "cli:version"
 bump = "cli:bump"
 publish = "cli:publish"
-local = "api.main:run_local"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
