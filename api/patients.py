@@ -1,7 +1,10 @@
+import operator
 from enum import Enum
 from typing import List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+
+from api.utils.ucam import PatientWithDevices, get_one_patient, get_patients
 
 router = APIRouter()
 
@@ -12,40 +15,27 @@ class ORDER(Enum):
     UID = "uid"
     LOCALID = "localid"
     DISEASE = "disease"
+    ID = "patient_id"
 
 
-class DiseaseType(Enum):
-    """Enum for disease types"""
-
-    Healthy = 1  #
-    HD = 2  # Huntington's
-    IBD = 3  # Inflammatory bowel
-    PD = 4  # Parkinson's
-    PSS = 5  # Progressive systemic sclerosis
-    RA = 6  # Rheumatoid arthritis
-    SLE = 7  # Systemic lupus erythematosus
-
-
-@router.get("/")
+@router.get("/", response_model=List[PatientWithDevices])
 def patients(
-    cohort: Optional[str] = None, orderby: Optional[ORDER] = None
-) -> List[Optional[str]]:
+    cohort: Optional[str] = Query(None, max_length=1, regex="[A-Z]"),  # noqa: B008
+    orderby: Optional[ORDER] = None,
+) -> Optional[List[PatientWithDevices]]:
     """Get a list of known patients"""
+    patients = get_patients()
+
     if cohort:
-        return ["A-PATIENT", "B-PATIENT", "C-PATIENT"]
+        patients = [p for p in patients if p.patient_id[0] == cohort]
+
     if orderby:
-        return [f"ordering by {orderby}"]
+        patients = sorted(patients, key=operator.attrgetter(orderby.value))
 
-    return []
+    return patients
 
 
-@router.get("/{id}")
-def details(id: str) -> str:
+@router.get("/{id}", response_model=PatientWithDevices)
+def one_patient(id: str) -> Optional[PatientWithDevices]:
     """Get more details about a patient"""
-    return f"more details for patient: {id}"
-
-
-@router.get("/{id}/auth")
-def auth(id: str) -> str:
-    """Get authentication details for a patient"""
-    return f"pass and login for patient: {id}"
+    return get_one_patient(id)
