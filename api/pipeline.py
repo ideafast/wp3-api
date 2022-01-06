@@ -1,11 +1,10 @@
 from datetime import datetime
-from enum import Enum
 from os import getenv
 from typing import Dict
 
 import requests
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -13,35 +12,20 @@ HOST = f"http://{getenv('AIRFLOW_SERVER')}:8080/api/v1"
 AUTH = ("localhost", getenv("WP3API_AIRFLOW_PASS"))
 
 
-class PipelineName(Enum):
-    """Pipeline names used in the IDEAFAST ETL"""
-
-    DRM = "dreem"
-    WKS = "wildkeys"
-    TFA = "cantab"
-    SMA = "stressmonitor"
-
-
-class Status(BaseModel):
+class PipelineStatus(BaseModel):
     """Pipeline device status parser"""
 
     last_completed: datetime
     failed_runs_since: int
 
 
-class StatusResponse(BaseModel):
-    """Overall pipeline parser"""
-
-    status: Dict[PipelineName, Status] = Field(default_factory=dict)
-
-
 # possible (expected) responses of the API - will be shown in api docs
 responses = {
     200: {
         "description": "Overview of pipeline runs per device",
-        "model": StatusResponse,
+        "model": Dict[str, PipelineStatus],
     },
-    502: {"description": "Internal connection error"},
+    502: {"description": "Internal connection error with IDEAFAST ETL Pipeline"},
 }
 
 
@@ -65,29 +49,22 @@ def _parse_status(dag_runs: dict) -> dict:
     last_ok = next(
         (index for (index, d) in enumerate(dag_runs) if d["state"] == "success"), None
     )
-    # search for 'failed' status, but no further than the latest succes
-    last_bad = next(
-        (
-            index
-            for (index, d) in enumerate(dag_runs[:last_ok])
-            if d["state"] == "failed"
-        ),
-        0,
-    )
 
-    return {
-        "last_completed": (
-            dag_runs[last_ok]["start_date"] if last_ok is not None else None
-        ),
-        "failed_runs_since": (last_bad if last_ok is not None else len(dag_runs)),
-    }
+    # count for 'failed' status up to latest success
+    count_bad = len([1 for d in dag_runs[:last_ok] if d["state"] == "failed"])
+
+    return PipelineStatus(
+        last_completed=dag_runs[last_ok]["start_date"] if last_ok is not None else None,
+        failed_runs_since=count_bad,
+    )
 
 
 @router.get("/", responses=responses)
 def status() -> dict:
     """Get status information about the ETL pipeline"""
     dag_ids = [d["dag_id"] for d in get_airflow("/dags")["dags"]]
-    past_dag_run_status = {
+
+    result = {
         id: _parse_status(
             get_airflow(f"/dags/{id}/dagRuns?limit=50&order_by=-start_date")["dag_runs"]
         )
@@ -95,4 +72,4 @@ def status() -> dict:
     }
     # TODO: add scheduled runs status (inc. if retries are set)
 
-    return past_dag_run_status
+    return result
