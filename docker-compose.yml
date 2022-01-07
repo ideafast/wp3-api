@@ -14,7 +14,8 @@ services:
       - "80:80"
     environment:
       APP_MODULE: api.main:api
-      WP3API_AIRFLOW_PASS: ${WP3API_AIRFLOW_PASS}
+    env_file:
+      - .env
     networks:
       - ideafast-etl
       - web
