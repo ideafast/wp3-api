@@ -10,20 +10,6 @@ A public facing API used to feed the IDEA-FAST Study Dashboard. It includes some
 
 Rename the `.env.example` to `.env` and update the variables/secrets as needed.
 
-### Containerised
-The API is available as a Docker image, and can be spun up with:
-
-```shell
-docker-compose up
-```
-
-Open your browser and try out a few endpoints, e.g.
-- http://localhost:8000/patients
-- http://localhost:8000/docs
-- http://localhost:8000/pipeline
-
-Note that for the pipeline endpoint, the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) docker image also needs to be running, as access is only provided locally.
-
 ### CLI
 
 [Poetry](https://python-poetry.org/) is used for dependency management during development and [pyenv](https://github.com/pyenv/pyenv) to manage python installations, so please install both on your local machine. We use python 3.8 by default, so please make sure this is installed via pyenv, e.g.
@@ -36,11 +22,15 @@ Once done, clone the repo to your machine, install dependencies for this project
 
 ```shell
 poetry install
-poetry shell
-python api/main.py
+poetry run local
 ```
 
-> Note that running `poetry run local` overrides some settings (see [/api/main.py](/api/main.py)) which are normally set in the _docker-compose.yaml_ when running the Docker image.
+Open your browser and try out a few endpoints, e.g.
+- http://localhost:8000/patients
+- http://localhost:8000/docs
+- http://localhost:8000/status
+
+> Note that for the pipeline endpoint, the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) docker image also needs to be running, as access is only provided locally.
 
 ## Local development
 
@@ -82,3 +72,8 @@ To run all these libraries:
 Or individual checks by choosing one of the options from the list:
 
     poetry run nox -rs [tests, mypy, lint, black]
+
+
+## Running remotely
+
+The API is hosted on the [ideafast/stack](https://github.com/ideafast/stack) using a docker-compose.yml file. You can mimick this locally by writing a docker-compose file such as in the [example.docker-compose.yml](example.docker-compose.yml) file.

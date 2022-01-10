@@ -1,11 +1,5 @@
 version: '3.5'
 
-networks:
-  ideafast-etl:
-    external: true
-  web:
-    external: true
-
 services:
   api:
     image: ideafast/wp3api:latest
@@ -16,6 +10,3 @@ services:
       APP_MODULE: api.main:api
     env_file:
       - .env
-    networks:
-      - ideafast-etl
-      - web
