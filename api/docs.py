@@ -16,10 +16,20 @@ class DEVICE(Enum):
     CTB = "cantab"
 
 
-@router.get("/")
+@router.post("/")
 def docs() -> str:
     """Get information about all device documentation"""
     return "got your some info about all devices"
+
+
+@router.post("/update", status_code=201)
+def update_docs(payload: dict) -> bool:
+    """Trigger an update for the docs from Github Actions"""
+    # return the latest git commit to confirm update succeeded
+    # FOR TESTING ONLY NOW
+    print(payload)
+    # TODO: trigger script/task that then downloads the new repo updates
+    return True
 
 
 @router.get("/{device}")
