@@ -4,6 +4,8 @@ __pycache__
 
 # secrets
 *.env
+github_repo_key
+github_repo_key.pub
 
 # Exported reuirements, better to export locally
 requirements.txt

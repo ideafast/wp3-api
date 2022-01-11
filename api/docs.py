@@ -1,6 +1,7 @@
+import subprocess
 from enum import Enum
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 router = APIRouter()
 
@@ -16,20 +17,22 @@ class DEVICE(Enum):
     CTB = "cantab"
 
 
+def retrieve_latest_docs() -> None:
+    """Run shell script to clone repo"""
+    subprocess.call("api/utils/pull_repo.sh")
+
+
 @router.post("/")
 def docs() -> str:
     """Get information about all device documentation"""
     return "got your some info about all devices"
 
 
-@router.post("/update", status_code=201)
-def update_docs(payload: dict) -> bool:
+@router.post("/update", status_code=202)
+def update_docs(payload: dict, background_tasks: BackgroundTasks) -> dict:
     """Trigger an update for the docs from Github Actions"""
-    # return the latest git commit to confirm update succeeded
-    # FOR TESTING ONLY NOW
-    print(payload)
-    # TODO: trigger script/task that then downloads the new repo updates
-    return True
+    background_tasks.add_task(retrieve_latest_docs)
+    return {"message": "Success: updating cache of Docs/API is scheduled"}
 
 
 @router.get("/{device}")

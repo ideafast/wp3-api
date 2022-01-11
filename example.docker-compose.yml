@@ -3,10 +3,13 @@ version: '3.5'
 services:
   api:
     image: ideafast/wp3api:latest
-    restart: always
+    restart: 'no'
     ports:
       - "80:80"
     environment:
       APP_MODULE: api.main:api
     env_file:
       - .env
+    volumes:
+      - ./github_repo_key:/tmp/github_repo_key
+      - ./github_repo_key.pub:/tmp/github_repo_key.pub

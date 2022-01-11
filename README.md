@@ -77,3 +77,6 @@ Or individual checks by choosing one of the options from the list:
 ## Running remotely
 
 The API is hosted on the [ideafast/stack](https://github.com/ideafast/stack) using a docker-compose.yml file. You can mimick this locally by writing a docker-compose file such as in the [example.docker-compose.yml](example.docker-compose.yml) file.
+
+> NOTE: the docs endpoint requires a ssh-key to be transferred into the container, see the example docker-compose file
+> This only works with a key without keyphrase (generally bad practice)
