@@ -1,9 +1,15 @@
+import codecs
 import subprocess
 from enum import Enum
+from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi.responses import HTMLResponse
 
 router = APIRouter()
+
+CURRENT_DIR = Path(__file__).parent
+FILES_PATH = CURRENT_DIR / "docs/html"
 
 
 class DEVICE(Enum):
@@ -17,24 +23,35 @@ class DEVICE(Enum):
     CTB = "cantab"
 
 
+def load_doc(device: DEVICE, type: str = "docs") -> str:
+    """Read the requested file into memory and return"""
+    try:
+        with codecs.open(f"{FILES_PATH}/{type}/{device.name}.html", "r") as f:
+            content = f.read()
+            return content
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail="File not found") from e
+
+
 def retrieve_latest_docs() -> None:
     """Run shell script to clone repo"""
-    subprocess.call("api/utils/pull_repo.sh")
+    subprocess.run(["git", "--git-dir", "api/docs/.git", "pull"])
 
 
-@router.post("/")
-def docs() -> str:
-    """Get information about all device documentation"""
-    return "got your some info about all devices"
+@router.post("/update", status_code=202)
+def update_docs(payload: dict, background_tasks: BackgroundTasks) -> dict:
+    """Trigger an update for the docs from Github Actions"""
+    # background_tasks.add_task(retrieve_latest_docs)
+    return {"message": "Success: updating cache of Docs/API is scheduled"}
 
 
-@router.get("/{device}")
+@router.get("/{device}", response_class=HTMLResponse)
 def device(device: DEVICE) -> str:
     """Get information about the device documentation"""
-    return f"got your some info about {device}"
+    return load_doc(device)
 
 
-@router.get("/{device}/faq")
+@router.get("/{device}/faq", response_class=HTMLResponse)
 def faq(device: DEVICE) -> str:
     """Get list of FAQ from device documentation"""
-    return f"got your some FAQs about {device}"
+    return load_doc(device, "faq")

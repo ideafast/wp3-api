@@ -23,4 +23,6 @@ cat ~/.ssh/github_repo_key.pub
 git clone git@github.com:ideafast/ideafast-devicesupportdocs-web.git ./api/docs
 
 # TODO: change/remove to main branch once merged into master
-git --git-dir api/docs/.git checkout COS
+cd api/docs
+git checkout COS
+cd
