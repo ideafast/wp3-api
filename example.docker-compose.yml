@@ -11,5 +11,4 @@ services:
     env_file:
       - .env
     volumes:
-      - ./github_repo_key:/tmp/github_repo_key
-      - ./github_repo_key.pub:/tmp/github_repo_key.pub
+      - ./ssh:/root/.ssh

@@ -145,7 +145,7 @@ def run_local() -> None:
     load_dotenv()
     os.environ["AIRFLOW_SERVER"] = "localhost"
 
-    uvicorn.run("api.main:api", host="0.0.0.0", port=8000, reload=True)  # noqa: S104
+    uvicorn.run("api.main:api", host="0.0.0.0", port=80, reload=True)  # noqa: S104
 
 
 if __name__ == "__main__":

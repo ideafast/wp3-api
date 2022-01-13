@@ -34,14 +34,14 @@ def load_doc(device: DEVICE, type: str = "docs") -> str:
 
 
 def retrieve_latest_docs() -> None:
-    """Run shell script to clone repo"""
+    """Run shell script to pull latest changes to the DOC/FAQ repo"""
     subprocess.run(["git", "--git-dir", "api/docs/.git", "pull"])
 
 
 @router.post("/update", status_code=202)
 def update_docs(payload: dict, background_tasks: BackgroundTasks) -> dict:
     """Trigger an update for the docs from Github Actions"""
-    # background_tasks.add_task(retrieve_latest_docs)
+    background_tasks.add_task(retrieve_latest_docs)
     return {"message": "Success: updating cache of Docs/API is scheduled"}
 
 
