@@ -1,7 +1,7 @@
 import subprocess
 from enum import Enum
 
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter
 
 router = APIRouter()
 
@@ -26,13 +26,6 @@ def retrieve_latest_docs() -> None:
 def docs() -> str:
     """Get information about all device documentation"""
     return "got your some info about all devices"
-
-
-@router.post("/update", status_code=202)
-def update_docs(payload: dict, background_tasks: BackgroundTasks) -> dict:
-    """Trigger an update for the docs from Github Actions"""
-    background_tasks.add_task(retrieve_latest_docs)
-    return {"message": "Success: updating cache of Docs/API is scheduled"}
 
 
 @router.get("/{device}")
