@@ -102,6 +102,9 @@ To check the current version of the Poetry package, local Git (_Git and Poetry a
 poetry run version
 ```
 
+#### GET /docs
+The documentation endpoint relies on a private git repository that needs to be loaded into the docker container at boot. This is handled by the [preshart.sh](scripts/prestart.sh) script. Locally, however, running this script outside a docker container will interfere with your local git and ssh setup. Instead, download the (private) repo as a .zip and place it into the api/docs folder for local development and testing.
+
 ### Running Tests, Type Checking, Linting and Code Formatting
 
 [Nox](https://nox.thea.codes/) is used for automation and standardisation of tests, type hints, automatic code formatting, and linting. Any contribution needs to pass these tests before creating a Pull Request.

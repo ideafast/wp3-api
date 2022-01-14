@@ -1,7 +1,8 @@
 import codecs
-import subprocess
+import subprocess  # noqa
 from enum import Enum
 from pathlib import Path
+from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import HTMLResponse
@@ -15,12 +16,16 @@ FILES_PATH = CURRENT_DIR / "docs/html"
 class DEVICE(Enum):
     """Enum for device types"""
 
-    DRM = "dreem"
-    VTP = "vitalpatch"
-    AX6 = "axivity"
-    SMP = "smartphone"
-    WKS = "wildkeys"
-    CTB = "cantab"
+    DRM = "DRM"
+    VTP = "VTP"
+    AX6 = "AX6"
+    SMP = "SMP"
+    WKS = "WKS"
+    CTB = "CTB"
+
+    # we also want to host documentation about software platforms
+    UCAM = "UCAM"
+    DMP = "DMP"
 
 
 def load_doc(device: DEVICE, type: str = "docs") -> str:
@@ -35,7 +40,7 @@ def load_doc(device: DEVICE, type: str = "docs") -> str:
 
 def retrieve_latest_docs() -> None:
     """Run shell script to pull latest changes to the DOC/FAQ repo"""
-    subprocess.run(["git", "--git-dir", "api/docs/.git", "pull"])
+    subprocess.run(["git", "--git-dir", "api/docs/.git", "pull"])  # noqa
 
 
 @router.post("/update", status_code=202)
@@ -43,6 +48,12 @@ def update_docs(payload: dict, background_tasks: BackgroundTasks) -> dict:
     """Trigger an update for the docs from Github Actions"""
     background_tasks.add_task(retrieve_latest_docs)
     return {"message": "Success: updating cache of Docs/API is scheduled"}
+
+
+@router.get("/list", response_model=List[str])
+def list_devices() -> List[str]:
+    """Return a list of possible devices/software to get docs for"""
+    return [d.name for d in DEVICE]
 
 
 @router.get("/{device}", response_class=HTMLResponse)
