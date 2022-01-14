@@ -40,7 +40,7 @@ def load_doc(device: DEVICE, type: str = "docs") -> str:
 
 def retrieve_latest_docs() -> None:
     """Run shell script to pull latest changes to the DOC/FAQ repo"""
-    subprocess.run(["git", "--git-dir", "api/docs/.git", "pull"])  # noqa
+    subprocess.run(["git", "-C", "api/docs/", "pull"])  # noqa
 
 
 @router.post("/update", status_code=202)
