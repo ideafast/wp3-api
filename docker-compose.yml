@@ -1,11 +1,5 @@
 version: '3.5'
 
-networks:
-  ideafast-etl:
-    external: true
-  web:
-    external: true
-
 services:
   api:
     image: ideafast/wp3api:latest
@@ -16,6 +10,18 @@ services:
       APP_MODULE: api.main:api
     env_file:
       - .env
-    networks:
-      - ideafast-etl
-      - web
+  mongo:
+    container_name: mongo_credentials2
+    image: mongo:5.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${_MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${_MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ideafast_credentials
+    ports:
+      - '27017:27017' 
+    volumes:
+      - mongo-db-volume:/data/db
+      - ./init/mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+
+volumes:
+  mongo-db-volume: null
