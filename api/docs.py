@@ -27,6 +27,9 @@ class DEVICE(Enum):
     UCAM = "UCAM"
     DMP = "DMP"
 
+    # referring to documentation about how to update this documentsion
+    DOCS = "DOCS"
+
 
 def load_doc(device: DEVICE, type: str = "docs") -> str:
     """Read the requested file into memory and return"""
