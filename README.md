@@ -1,6 +1,6 @@
 # IDEA-FAST WP3 Public Facing API
 
-A public facing API used to feed the IDEA-FAST Study Dashboard. It includes some functionality embedded in the `IDEAFAST/middleware-service:consumer` repository, but has been started from scratch to interface with the `IDEAFAST/ideafast-etl` pipeline and newly set up Dashboard for simplicity and separation of tasks.
+A public facing API used to feed the IDEA-FAST Study Dashboard. It includes some functionality embedded in the `IDEAFAST/middleware-service:consumer` repository, but has been started from scratch to interface with the `IDEAFAST/ideafast-etl` pipeline and newly set up Dashboard for simplicity and separation of concerns.
 
 The primary task fo the API is to feed the IDEAFAST Study Dashboard with
 
@@ -26,7 +26,7 @@ By design, the API is containerised and can be easily deployed with a docker-com
 
 ### Run
 
-Only meant as an example, but you can run the API locally:
+Only meant as an example, but you can run the API locally with the example docker-compose file in this repository:
 
 ```shell
 docker-compose -f example.docker-compose.yml up
@@ -44,12 +44,10 @@ curl -X POST -H "Content-Type: application/json" -d '{"sample":"dict"}' http://l
 
 When deploying this API remotely, please implement te appropriate safety protocol (e.g. basic authentication) for access. IDEAFAST uses a reverse proxy with [traefik](https://traefik.io/) and restricts access to the API (such as the endpoint above) with basic authentication.
 
----
-
-> Note that all endpoints have dependencies on other (spun up) services with potential passwords (see [.example.env](.example.env)):
-> - GET /patients on the UCAM API _(the first request can take a while due to the serverless architecture used by UCAM)_
-> - GET /status on the the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) service
-> - GET /docs on the private GitHub repository, for which the ssh key is needed
+Note that all endpoints have dependencies on other (spun up) services with potential passwords (see [.example.env](.example.env)):
+- GET /patients on the UCAM API _(the first request can take a while due to the serverless architecture used by UCAM)_
+- GET /status on the the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) service
+- GET /docs on the private GitHub repository, for which the ssh key is needed
 ----
 
 ## Development and hot-reloading
@@ -63,15 +61,15 @@ A CLI command sets up the API locally to enable hot-reloading as code changes, s
 ```shell
 pyenv install 3.8.0 && pyenv global 3.8.0
 ```
-
-Once done, clone the repo to your machine, install dependencies for this project, and quickstart the API which will watch for local changes:
-
-> **Do not forget to add environmental variables and a ssh key as outlined in the [Setup](#setup) above**
+Add the required environmental variables in the `.env` file and quickstart the API which will watch for local changes:
 
 ```shell
 poetry install
 poetry run local
 ```
+
+#### GET /docs
+The documentation endpoint relies on a private git repository that needs to be loaded into the docker container at boot. This is handled by the [preshart.sh](scripts/prestart.sh) script. Locally, however, running this script outside a docker container will interfere with your local git and ssh setup. Instead, download the (private) repo as a .zip and place it into the api/docs folder for local development and testing.
 
 ## Local development
 
@@ -101,9 +99,6 @@ To check the current version of the Poetry package, local Git (_Git and Poetry a
 ```shell
 poetry run version
 ```
-
-#### GET /docs
-The documentation endpoint relies on a private git repository that needs to be loaded into the docker container at boot. This is handled by the [preshart.sh](scripts/prestart.sh) script. Locally, however, running this script outside a docker container will interfere with your local git and ssh setup. Instead, download the (private) repo as a .zip and place it into the api/docs folder for local development and testing.
 
 ### Running Tests, Type Checking, Linting and Code Formatting
 
