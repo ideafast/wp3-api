@@ -46,7 +46,7 @@ def retrieve_latest_docs() -> None:
     subprocess.run(["git", "-C", "api/docs/", "pull"])  # noqa
 
 
-@router.post("/update", status_code=202)
+@router.post("/update", status_code=202, include_in_schema=False)
 def update_docs(payload: dict, background_tasks: BackgroundTasks) -> dict:
     """Trigger an update for the docs from Github Actions"""
     background_tasks.add_task(retrieve_latest_docs)
