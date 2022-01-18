@@ -8,12 +8,12 @@ load_dotenv()
 
 # setup mongodb connection
 myclient = MongoClient(
-    host=["localhost:27017"],
+    host=["mongo_credentials:27017"],
     username=os.getenv('_MONGO_INITDB_ROOT_USERNAME'),
     password=os.getenv('_MONGO_INITDB_ROOT_PASSWORD')
 )
 mydb = myclient["credentials_db"]
-mycol = mydb["crednetials_collection"]
+mycol = mydb["credentials_collection"]
 
 @dataclass
 class PatientsCredentials():
@@ -28,15 +28,12 @@ class PatientsCredentials():
 
 def get_patients_credentials(the_id: str) -> Optional[PatientsCredentials]:
     """Get credentials for one patient based on the ID"""
-    # go to mongo with patient ID
-    # example K-S4YJHD
     myquery = { "patient_id": the_id }
     payload = mycol.find(myquery)
     newPay = None
     for x in payload:
         newPay = x
-    print("here comes the payload")
-    print(newPay)
+
     if newPay is not None:
         patient_credentials = PatientsCredentials(
                 patient_id = the_id,
