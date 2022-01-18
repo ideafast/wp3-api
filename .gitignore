@@ -4,6 +4,8 @@ __pycache__
 
 # secrets
 *.env
+ssh/*
+!ssh/.gitkeep
 
 # Exported reuirements, better to export locally
 requirements.txt
@@ -13,3 +15,6 @@ requirements.txt
 .pytest_cache
 .mypy_cache
 .nox
+
+# Possible remnants of local dev
+/api/docs

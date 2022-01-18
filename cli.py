@@ -23,7 +23,7 @@ def get_latest_docker_tag() -> Optional[str]:
     """Retrieve latest tag from the IDEAFAST Docker Images on you machine"""
     res = run_command(
         f"docker images {DOCKER_REGISTRY} --format {{{{.Tag}}}} "
-        f"| egrep -v 'latest' | sort -r | head -n 1",
+        f"| egrep -v 'latest|<none>' | sort -r | head -n 1",
         True,
     )
     return res.stdout.decode("ascii").rstrip() or None
@@ -145,7 +145,7 @@ def run_local() -> None:
     load_dotenv()
     os.environ["AIRFLOW_SERVER"] = "localhost"
 
-    uvicorn.run("api.main:api", host="0.0.0.0", port=8000, reload=True)  # noqa: S104
+    uvicorn.run("api.main:api", host="0.0.0.0", port=80, reload=True)  # noqa: S104
 
 
 if __name__ == "__main__":

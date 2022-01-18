@@ -56,7 +56,7 @@ class Patient(PatientBase, CommonBase):
     @classmethod
     def serialize(cls, payload: dict) -> Patient:
         """Serialise UCAM payloads to dataclasses"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             start_wear=format_weartime(payload["start_Date"]),
             end_wear=format_weartime(payload["end_Date"])
             if payload["end_Date"]
@@ -75,7 +75,7 @@ class Device(DeviceBase, CommonBase):
     @classmethod
     def serialize(cls, payload: dict) -> Device:
         """Serialise UCAM payloads to dataclasses"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             start_wear=format_weartime(payload["start_Date"]),
             end_wear=format_weartime(payload["end_Date"])
             if payload["end_Date"]
@@ -95,7 +95,7 @@ class DeviceWithPatients(DeviceBase):
     @classmethod
     def serialize(cls, payload: dict) -> DeviceWithPatients:
         """Serialise UCAM payloads to dataclasses"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             device_id=payload["device_id"],
             patients=[Patient.serialize(patients) for patients in payload["patients"]],
         )
@@ -110,7 +110,7 @@ class PatientWithDevices(PatientBase):
     @classmethod
     def serialize(cls, payload: dict) -> PatientWithDevices:
         """Serialise UCAM payloads to dataclasses"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             patient_id=payload["subject_id"],
             disease=DiseaseType(int(payload["subject_Group"])),
             devices=[Device.serialize(devices) for devices in payload["devices"]],
@@ -118,7 +118,7 @@ class PatientWithDevices(PatientBase):
 
 
 def format_weartime(time: str) -> datetime:
-    """create a datetime object from a UCAM provide weartime string"""
+    """Create a datetime object from a UCAM provide weartime string"""
     return datetime.strptime(time, "%Y-%m-%dT%H:%M:%S")
 
 
@@ -149,6 +149,7 @@ def ucam_access_token() -> str:
 def response(request_url: str) -> Optional[dict]:
     """
     Perform GET request on the UCAM API
+
     NOTE: requests automatically converts null to None
     """
     headers = {"Authorization": f"Bearer {ucam_access_token()}"}
