@@ -86,7 +86,6 @@ class Device(DeviceBase, CommonBase):
             device_id=payload["device_id"],
         )
 
-
 @dataclass
 class DeviceWithPatients(DeviceBase):
     """Top level body for parsing devices"""
@@ -192,3 +191,4 @@ def get_devices(device_id: str = "") -> Optional[List[DeviceWithPatients]]:
         if payload
         else None
     )
+
