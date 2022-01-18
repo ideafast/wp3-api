@@ -10,6 +10,18 @@ services:
       APP_MODULE: api.main:api
     env_file:
       - .env
+  mongo:
+    container_name: mongo_credentials
+    image: mongo:5.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${_MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${_MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${_MONGO_INITDB_DATABASE}
+    ports:
+      - '27017:27017' 
+    volumes:
+      - mongo-db-volume:/data/db
+      - ./init/mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
 
 volumes:
   mongo-db-volume: null
