@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import json
 from datetime import datetime
 from enum import IntEnum
 from typing import List, Optional
@@ -86,6 +85,7 @@ class Device(DeviceBase, CommonBase):
             device_id=payload["device_id"],
         )
 
+
 @dataclass
 class DeviceWithPatients(DeviceBase):
     """Top level body for parsing devices"""
@@ -115,6 +115,7 @@ class PatientWithDevices(PatientBase):
             disease=DiseaseType(int(payload["subject_Group"])),
             devices=[Device.serialize(devices) for devices in payload["devices"]],
         )
+
 
 def format_weartime(time: str) -> datetime:
     """Create a datetime object from a UCAM provide weartime string"""
@@ -175,6 +176,7 @@ def get_patients() -> Optional[List[PatientWithDevices]]:
         else None
     )
 
+
 def get_one_patient(patient_id: str) -> Optional[PatientWithDevices]:
     """Get one patient based on the ID"""
     # NOTE: patients/patient_id returns a 204 if not found, other endpoints []
@@ -191,4 +193,3 @@ def get_devices(device_id: str = "") -> Optional[List[DeviceWithPatients]]:
         if payload
         else None
     )
-

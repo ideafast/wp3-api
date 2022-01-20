@@ -12,13 +12,14 @@ services:
       - .env
     volumes:
       - ./ssh:/root/.ssh
+
   mongo:
-    container_name: mongo_credentials2
+    container_name: mongo_credentials
     image: mongo:5.0
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${_MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ideafast_credentials
+      MONGO_INITDB_DATABASE: ${_MONGO_INITDB_DATABASE}
     ports:
       - '27017:27017'
     volumes:

@@ -1,23 +1,27 @@
-from pydantic.dataclasses import dataclass
-from typing import List, Optional
-from pymongo import MongoClient
 import os
+from typing import Optional
+
 from dotenv import load_dotenv
+from pydantic.dataclasses import dataclass
+from pymongo import MongoClient
 
 load_dotenv()
 
 # setup mongodb connection
 myclient = MongoClient(
-    host=["mongo_credentials:27017"],
-    username=os.getenv('_MONGO_INITDB_ROOT_USERNAME'),
-    password=os.getenv('_MONGO_INITDB_ROOT_PASSWORD')
+    host=["localhost:27017"],
+    username=os.getenv("_MONGO_INITDB_ROOT_USERNAME"),
+    password=os.getenv("_MONGO_INITDB_ROOT_PASSWORD"),
 )
-mydb = myclient["credentials_db"]
-mycol = mydb["credentials_collection"]
+mydb = myclient["mongo_test"]
+mycol = mydb["mongo_test_collection"]
+
 
 @dataclass
-class PatientsCredentials():
+class PatientsCredentials:
     """Patient credentials"""
+
+    _id: str
     patient_id: str
     dreem_email: str
     dreem_password: str
@@ -26,25 +30,13 @@ class PatientsCredentials():
     tfa_email: str
     tfa_password: str
 
+
 def get_patients_credentials(the_id: str) -> Optional[PatientsCredentials]:
     """Get credentials for one patient based on the ID"""
-    myquery = { "patient_id": the_id }
-    payload = mycol.find(myquery)
-    newPay = None
-    for x in payload:
-        newPay = x
-
-    if newPay is not None:
-        patient_credentials = PatientsCredentials(
-                patient_id = the_id,
-                dreem_email = newPay['dreem_email'],
-                dreem_password = newPay['dreem_password'],
-                wildkeys_email = newPay['wildkeys_email'],
-                wildkeys_password = newPay['wildkeys_password'],
-                tfa_email = newPay['tfa_email'],
-                tfa_password = newPay['tfa_password']
-        )
+    myquery = {"patient_id": the_id}
+    payload = list(mycol.find(myquery))
+    if payload:
+        patient_credentials = PatientsCredentials(**payload[0])
         return patient_credentials
     else:
         return None
-    

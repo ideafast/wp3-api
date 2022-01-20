@@ -18,3 +18,4 @@ requirements.txt
 
 # Possible remnants of local dev
 /api/docs
+/dist/*
