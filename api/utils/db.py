@@ -9,12 +9,12 @@ load_dotenv()
 
 # setup mongodb connection
 myclient = MongoClient(
-    host=["localhost:27017"],
+    host=[f"{os.getenv('_MONGO_HOST')}:27017"],
     username=os.getenv("_MONGO_INITDB_ROOT_USERNAME"),
     password=os.getenv("_MONGO_INITDB_ROOT_PASSWORD"),
 )
-mydb = myclient["mongo_test"]
-mycol = mydb["mongo_test_collection"]
+mydb = myclient[os.getenv("_MONGO_INITDB_DATABASE")]
+mycol = mydb[os.getenv("_MONGO_INITDB_COLLECTION")]
 
 
 @dataclass
