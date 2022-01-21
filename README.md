@@ -49,22 +49,6 @@ Note that all endpoints have dependencies on other (spun up) services with poten
 - GET /patients on the UCAM API _(the first request can take a while due to the serverless architecture used by UCAM)_
 - GET /status on the the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) service
 - GET /docs on the private GitHub repository, for which the ssh key is needed
-- GET /patients/creadentials on a local `mongo` container
-----
-
-## Development and hot-reloading
-
-Trigger a pull for new docs for the GET /docs endpoint by running
-```shell
-curl -X POST -H "Content-Type: application/json" -d '{"sample":"dict"}' http://localhost/docs/update
-```
-
-When deploying this API remotely, please implement the appropriate safety protocol (e.g. basic authentication) for access. IDEAFAST uses a reverse proxy with [traefik](https://traefik.io/) and restricts access to the API (such as the endpoint above) with basic authentication.
-
-Note that all endpoints have dependencies on other (spun up) services with potential passwords (see [.example.env](.example.env)):
-- GET /patients on the UCAM API _(the first request can take a while due to the serverless architecture used by UCAM)_
-- GET /status on the the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) service
-- GET /docs on the private GitHub repository, for which the ssh key is needed
 ----
 
 ## Development and hot-reloading
