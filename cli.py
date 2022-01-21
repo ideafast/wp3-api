@@ -135,7 +135,8 @@ def version() -> None:
 
 
 @cli.command()
-def run_local() -> None:
+@click.option("--clean", is_flag=True, help="removes volume afterwards")
+def run_local(clean: bool) -> None:
     """Run locally with adjusted settings and loaded .envs"""
     import os
 
@@ -144,8 +145,15 @@ def run_local() -> None:
 
     load_dotenv()
     os.environ["AIRFLOW_SERVER"] = "localhost"
+    os.environ["_MONGO_HOST"] = "localhost"
+
+    run_command("docker-compose -f example.docker-compose.yml up -d mongo")
 
     uvicorn.run("api.main:api", host="0.0.0.0", port=80, reload=True)  # noqa: S104
+
+    run_command(
+        f"docker-compose -f example.docker-compose.yml down {'-v' if clean else ''}"
+    )  # cleanup
 
 
 if __name__ == "__main__":

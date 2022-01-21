@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Query
 
+from api.utils.db import PatientsCredentials, get_patients_credentials
 from api.utils.ucam import PatientWithDevices, get_one_patient, get_patients
 
 router = APIRouter()
@@ -33,6 +34,12 @@ def patients(
         patients = sorted(patients, key=operator.attrgetter(orderby.value))
 
     return patients
+
+
+@router.get("/credentials/{id}", response_model=PatientsCredentials)
+def one_patients_credentials(id: str) -> Optional[PatientsCredentials]:
+    """Return list of all technology platform credentials for this patient"""
+    return get_patients_credentials(id)
 
 
 @router.get("/{id}", response_model=PatientWithDevices)

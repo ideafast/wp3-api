@@ -34,6 +34,7 @@ docker-compose -f example.docker-compose.yml up
 
 Open your browser and try out a few endpoints, e.g.
 - http://localhost/patients
+- http://localhost/patients/credentials/{participant_id}
 - http://localhost/docs/axivity
 - http://localhost/status
 
@@ -61,11 +62,11 @@ A CLI command sets up the API locally to enable hot-reloading as code changes, s
 ```shell
 pyenv install 3.8.0 && pyenv global 3.8.0
 ```
-Add the required environmental variables in the `.env` file and quickstart the API which will watch for local changes:
+Add the required environmental variables in the `.env` file and quickstart the API which will watch for local changes. This will also spin up a docker container for the `mongodb` and patient credentials. Add the `--clean` command to auto-clean the docker volume when you shut down the API:
 
 ```shell
 poetry install
-poetry run local
+poetry run local # --clean
 ```
 
 #### GET /docs
