@@ -4,8 +4,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Query
 
+from api.utils.db import PatientsCredentials, get_patients_credentials
 from api.utils.ucam import PatientWithDevices, get_one_patient, get_patients
-from api.utils.db import get_patients_credentials, PatientsCredentials
 
 router = APIRouter()
 

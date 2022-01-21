@@ -21,7 +21,6 @@ mycol = mydb[os.getenv("_MONGO_INITDB_COLLECTION")]
 class PatientsCredentials:
     """Patient credentials"""
 
-    _id: str
     patient_id: str
     dreem_email: str
     dreem_password: str
@@ -34,9 +33,9 @@ class PatientsCredentials:
 def get_patients_credentials(the_id: str) -> Optional[PatientsCredentials]:
     """Get credentials for one patient based on the ID"""
     myquery = {"patient_id": the_id}
-    payload = list(mycol.find(myquery))
+    payload = mycol.find_one(myquery, {"_id": 0})  # exclude _id from result
     if payload:
-        patient_credentials = PatientsCredentials(**payload[0])
+        patient_credentials = PatientsCredentials(**payload)
         return patient_credentials
     else:
         return None
