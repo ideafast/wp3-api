@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import requests
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -19,6 +19,7 @@ class PipelineHealth(Enum):
     RED = "red"  # The pipeline failed to run
     ORANGE = "orange"  # A task within the run failed
     GREEN = "green"  # Pipeline and tasks ran successfully
+    UNKNOWN = "unknown"  # Cannot determine health
 
 
 class PipelineStatus(BaseModel):
@@ -28,15 +29,21 @@ class PipelineStatus(BaseModel):
     health: PipelineHealth
 
 
-# possible (expected) responses of the API - will be shown in api docs
-responses = {
-    200: {
-        "description": "Overview of pipeline runs per device. Pipeline health"
-        + f"can be any of: {[k.name for k in PipelineHealth]}",
-        "model": Dict[str, PipelineStatus],
-    },
-    502: {"description": "Internal connection error with IDEAFAST ETL Pipeline"},
-}
+class PipelineTask(BaseModel):
+    """Task parser"""
+
+    task_id: str
+    state: str
+
+
+class PipelineRun(BaseModel):
+    """Pipeline run status model"""
+
+    start_date: datetime
+    dag_run_id: str
+    state: str
+    health: PipelineHealth = PipelineHealth.UNKNOWN
+    tasks: List[PipelineTask] = Field(default_factory=list)
 
 
 def get_airflow(endpoint: str) -> dict:
@@ -54,40 +61,30 @@ def get_airflow(endpoint: str) -> dict:
     return result
 
 
-@router.get("/", responses=responses)
+@router.get("/", response_model=Dict[str, PipelineStatus])
 def get_dag_run_status() -> dict:
     """Get status information about the very latest individual pipeline runs"""
     dag_ids = get_dag_run_list()
 
     # just focusing on the latest run
-    latest_runs = {id: get_dag_dagruns(id, limit=1)[0] for id in dag_ids}
+    latest_runs = {id: get_dag_dagruns(id)[0] for id in dag_ids}
 
     for dag_id, run in latest_runs.items():
-        tasks_status = get_dagrun_tasks(dag_id, run["dag_run_id"])
-        latest_runs[dag_id]["tasks"] = tasks_status
-
-        # determine pipeline health
-        latest_runs[dag_id]["health"] = (
-            PipelineHealth.RED
-            if "failed" in run["state"]
-            else PipelineHealth.ORANGE
-            if any(["failed" in t["state"] for t in tasks_status])
-            else PipelineHealth.GREEN
-        )
+        update_run_health(dag_id, run)
 
     return {
-        id: PipelineStatus(last_completed=s["start_date"], health=s["health"])
-        for id, s in latest_runs.items()
+        id: PipelineStatus(last_completed=run.start_date, health=run.health)
+        for id, run in latest_runs.items()
     }
 
 
-@router.get("/list")
-def get_dag_run_list() -> list:
+@router.get("/list", response_model=List[str])
+def get_dag_run_list() -> List[str]:
     """Get the list of pipelines 'names' on the server"""
     return [d["dag_id"] for d in get_airflow("/dags")["dags"]]
 
 
-@router.get("/history")
+@router.get("/history", response_model=Dict[str, List[PipelineRun]])
 def get_dag_run_status_historically() -> dict:
     """Get the history of all pipeline runs"""
     dag_ids = get_dag_run_list()
@@ -95,38 +92,25 @@ def get_dag_run_status_historically() -> dict:
     # just focusing on the latest run
     all_runs = {id: get_all_dag_dagruns(id) for id in dag_ids}
 
+    # evaluate all runs. NOTE: changes mutable iterable whilst iterating
     for dag_id, runs in all_runs.items():
-        for index, run in enumerate(runs):
-            tasks_status = get_dagrun_tasks(dag_id, run["dag_run_id"])
-            all_runs[dag_id][index]["tasks"] = tasks_status
-
-            # determine pipeline health
-            all_runs[dag_id][index]["health"] = (
-                PipelineHealth.RED
-                if "failed" in run["state"]
-                else PipelineHealth.ORANGE
-                if any(["failed" in t["state"] for t in tasks_status])
-                else PipelineHealth.GREEN
-            )
+        for run in runs:
+            update_run_health(dag_id, run)
 
     return all_runs
 
 
-def get_dag_dagruns(dag_id: str, limit: int = 10, offset: int = 0) -> List[dict]:
+def get_dag_dagruns(dag_id: str, limit: int = 1, offset: int = 0) -> List[PipelineRun]:
     """Get dagruns from a particular dag_id"""
-    info_of_interest = ("start_date", "dag_run_id", "state")
-
     payload = get_airflow(
         f"/dags/{dag_id}/dagRuns?order_by=-start_date&limit={limit}&offset={offset}"
     )["dag_runs"]
+    return [PipelineRun(**p) for p in payload]
 
-    return [{k: data[k] for k in info_of_interest} for data in payload]
 
-
-def get_all_dag_dagruns(dag_id: str) -> List:
+def get_all_dag_dagruns(dag_id: str) -> List[PipelineRun]:
     """Get all possible dagruns from a particular dag_id"""
-    runs = []
-    offset, steps = 0, 100
+    runs, offset, steps = [], 0, 100
 
     while past_runs := get_dag_dagruns(dag_id, limit=steps, offset=offset):
         runs.extend(past_runs)
@@ -135,12 +119,24 @@ def get_all_dag_dagruns(dag_id: str) -> List:
     return runs
 
 
-def get_dagrun_tasks(dag_id: str, dag_run_id: str) -> List[dict]:
+def get_dagrun_tasks(dag_id: str, dag_run_id: str) -> List[PipelineTask]:
     """Get status information about individual pipeline run's tasks"""
-    info_of_interest = ("task_id", "state")
-
     payload = get_airflow(f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances")[
         "task_instances"
     ]
+    return [PipelineTask(**p) for p in payload]
 
-    return [{k: task[k] for k in info_of_interest} for task in payload]
+
+def update_run_health(dag_id: str, run: PipelineRun) -> None:
+    """Get tasks and determine health of the run"""
+    # NOTE: Modifies the mutable PipelineRun in place
+
+    run.tasks = get_dagrun_tasks(dag_id, run.dag_run_id)
+    # determine pipeline health
+    run.health = (
+        PipelineHealth.RED
+        if "failed" in run.state
+        else PipelineHealth.ORANGE
+        if any(["failed" in t.state for t in run.tasks])
+        else PipelineHealth.GREEN
+    )
