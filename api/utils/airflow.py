@@ -1,11 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from os import getenv
 from typing import List, Optional
 
 import requests
+from croniter import croniter
 from fastapi import HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 HOST = f"http://{getenv('AIRFLOW_SERVER')}:8080/api/v1"
 AUTH = ("localhost", getenv("WP3API_AIRFLOW_PASS"))
@@ -25,6 +26,22 @@ class PipelineStatus(BaseModel):
 
     last_completed: datetime
     health: PipelineHealth
+    schedule_interval: Optional[str]
+
+    # NOTE: next 'logical' time to run based on schedule. Ignores
+    # pre-scheduled runs that are created due to backfilling
+    next_logically_scheduled: Optional[datetime]
+
+    @validator("next_logically_scheduled", always=True)
+    def calc_next(cls, v: Optional[datetime], values: dict) -> datetime:
+        """Calculate and set next_logically_scheduled"""
+        return (
+            croniter(
+                values["schedule_interval"], datetime.now(tz=timezone.utc)
+            ).get_next(ret_type=datetime)
+            if values["schedule_interval"]
+            else None
+        )
 
 
 class PipelineTask(BaseModel):
