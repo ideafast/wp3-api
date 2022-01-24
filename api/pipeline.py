@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter
 
@@ -17,10 +17,13 @@ router = APIRouter()
 @router.get("/", response_model=Dict[str, PipelineStatus])
 def get_dag_run_status() -> dict:
     """Get status information about the very latest individual pipeline runs"""
-    dag_ids = get_dag_run_list()
+    dag_ids = get_dag_run_list_with_schedules().keys()
 
-    # just focusing on the latest run
-    latest_runs = {id: get_dag_dagruns(id)[0] for id in dag_ids}
+    # only get the latest succesfull run
+    latest_runs = {
+        id: next(run for run in get_dag_dagruns(id) if run.state == "success")
+        for id in dag_ids
+    }
 
     for dag_id, run in latest_runs.items():
         update_run_health(dag_id, run)
@@ -31,19 +34,24 @@ def get_dag_run_status() -> dict:
     }
 
 
-@router.get("/list", response_model=List[str])
-def get_dag_run_list() -> List[str]:
-    """Get the list of pipelines 'names' on the server"""
-    return [d["dag_id"] for d in get_airflow("/dags")["dags"]]
+@router.get("/list", response_model=Dict[str, Optional[str]])
+def get_dag_run_list_with_schedules() -> Dict[str, Optional[str]]:
+    """Get the list of pipelines and their schedules"""
+    return {
+        d["dag_id"]: d["schedule_interval"]["value"]
+        if d["schedule_interval"] is not None
+        else None
+        for d in get_airflow("/dags")["dags"]
+    }
 
 
 @router.get("/history", response_model=Dict[str, List[PipelineRun]])
 def get_dag_run_status_historically() -> dict:
     """Get the history of all pipeline runs"""
-    dag_ids = get_dag_run_list()
+    dag_ids = get_dag_run_list_with_schedules()
 
     # just focusing on the latest run
-    all_runs = {id: get_all_dag_dagruns(id) for id in dag_ids}
+    all_runs = {id: get_all_dag_dagruns(id) for id in dag_ids.keys()}
 
     # evaluate all runs. NOTE: changes mutable iterable whilst iterating
     for dag_id, runs in all_runs.items():

@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from os import getenv
-from typing import List
+from typing import List, Optional
 
 import requests
 from fastapi import HTTPException
@@ -37,7 +37,7 @@ class PipelineTask(BaseModel):
 class PipelineRun(BaseModel):
     """Pipeline run status model"""
 
-    start_date: datetime
+    start_date: Optional[datetime]
     dag_run_id: str
     state: str
     health: PipelineHealth = PipelineHealth.UNKNOWN
@@ -59,7 +59,7 @@ def get_airflow(endpoint: str) -> dict:
     return result
 
 
-def get_dag_dagruns(dag_id: str, limit: int = 1, offset: int = 0) -> List[PipelineRun]:
+def get_dag_dagruns(dag_id: str, limit: int = 25, offset: int = 0) -> List[PipelineRun]:
     """Get dagruns from a particular dag_id"""
     payload = get_airflow(
         f"/dags/{dag_id}/dagRuns?order_by=-start_date&limit={limit}&offset={offset}"
