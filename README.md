@@ -52,14 +52,14 @@ Note that all endpoints have dependencies on other (spun up) services with poten
 
 ### Adding participant credentials to the database
 
-Patient credentials are made accessible to study site staff via the study dashboard, and the dashboard receives them via our API. However, credentials must first be loaded into the mongo database. A script - insert_credentials.py - is provided for this purpose within the */insert_credentials* folder. This script must be paired with a .csv file of patient credentials which should be named *credentials.csv* and placed within the credentials subdirectory. This directory maps onto a directory of the same name and path within the container, so the .csv can be prepared after the container has been started.
+Patient credentials are made accessible to study site staff via the study dashboard, and the dashboard receives them via our API. However, credentials must first be loaded into the mongo database. A script - insert_credentials.py - is provided for this purpose within the */insert_credentials* folder. This script must be paired with a .csv file of patient credentials which should be named *credentials.csv* and placed within the same directory (beside credentials.csv.example). The directory maps onto a directory of the same name and path within the container, so the .csv can be prepared after the container has been started.
 
 Once you have started the container, you can enter it like:
 ```shell
 docker exec -it wp3-api_api_1 bash
 ```
 
-Type 'ls' to list the files within the directory you have entered and yu should see an insert_credentials folder. Navigate to *insert_credentials/credentials* and ensure that you have placed a credentials.csv file is located here, as described above. Then up one level and you will find the script which inserts those credentials into the Mongo database. This can be run like:
+Type 'ls' to list the files within the directory you have entered and you should see an insert_credentials folder. Navigate to *insert_credentials* and ensure that you have placed a credentials.csv file here, as described above. You will also find a script which inserts those credentials into the Mongo database. This can be run like:
 ```shell
 python insert_credentials.py
 ```

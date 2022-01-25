@@ -2,9 +2,6 @@ import csv
 import os
 
 import pymongo
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # myclient = pymongo.MongoClient("mongodb://colin:colin_pass@localhost:27017/")
 myclient = pymongo.MongoClient(
@@ -18,7 +15,7 @@ mycol = mydb[os.getenv("_MONGO_INITDB_COLLECTION")]
 data = []
 
 # open CSV file
-with open("./credentials/credentials.csv") as csv_file:
+with open("credentials.csv") as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=",")
     next(csv_reader)  # skip the first row (headers)
     for row in csv_reader:
