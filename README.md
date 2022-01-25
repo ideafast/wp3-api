@@ -43,12 +43,26 @@ Trigger a pull for new docs for the GET /docs endpoint by running
 curl -X POST -H "Content-Type: application/json" -d '{"sample":"dict"}' http://localhost/docs/update
 ```
 
-When deploying this API remotely, please implement te appropriate safety protocol (e.g. basic authentication) for access. IDEAFAST uses a reverse proxy with [traefik](https://traefik.io/) and restricts access to the API (such as the endpoint above) with basic authentication.
+When deploying this API remotely, please implement the appropriate safety protocol (e.g. basic authentication) for access. IDEAFAST uses a reverse proxy with [traefik](https://traefik.io/) and restricts access to the API (such as the endpoint above) with basic authentication.
 
 Note that all endpoints have dependencies on other (spun up) services with potential passwords (see [.example.env](.example.env)):
 - GET /patients on the UCAM API _(the first request can take a while due to the serverless architecture used by UCAM)_
 - GET /status on the the [`ideafast-etl`](https://github.com/ideafast/ideafast-etl) service
 - GET /docs on the private GitHub repository, for which the ssh key is needed
+
+### Adding participant credentials to the database
+
+Patient credentials are made accessible to study site staff via the study dashboard, and the dashboard receives them via our API. However, credentials must first be loaded into the mongo database. A script - insert_credentials.py - is provided for this purpose within the */insert_credentials* folder. This script must be paired with a .csv file of patient credentials which should be named *credentials.csv* and placed within the same directory (beside credentials.csv.example). The directory maps onto a directory of the same name and path within the container, so the .csv can be prepared after the container has been started.
+
+Once you have started the container, you can enter it like:
+```shell
+docker exec -it wp3-api_api_1 bash
+```
+
+Type 'ls' to list the files within the directory you have entered and you should see an insert_credentials folder. Navigate to *insert_credentials* and ensure that you have placed a credentials.csv file here, as described above. You will also find a script which inserts those credentials into the Mongo database. This can be run like:
+```shell
+python insert_credentials.py
+```
 ----
 
 ## Development and hot-reloading

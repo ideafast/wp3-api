@@ -12,6 +12,7 @@ services:
       - .env
     volumes:
       - ./ssh:/root/.ssh
+      - ./insert_credentials:/app/insert_credentials
 
   mongo:
     container_name: mongo_credentials

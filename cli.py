@@ -145,7 +145,7 @@ def run_local(clean: bool) -> None:
 
     load_dotenv()
     os.environ["AIRFLOW_SERVER"] = "localhost"
-    os.environ["_MONGO_HOST"] = "localhost"
+    os.environ["_MONGO_INITDB_HOST"] = "localhost"
 
     run_command("docker-compose -f example.docker-compose.yml up -d mongo")
 
