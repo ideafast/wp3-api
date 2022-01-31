@@ -24,7 +24,7 @@ class PipelineHealth(Enum):
 class PipelineStatus(BaseModel):
     """Pipeline device status parser"""
 
-    last_completed: datetime
+    last_completed: Optional[datetime]
     health: PipelineHealth
     schedule_interval: Optional[str]
 

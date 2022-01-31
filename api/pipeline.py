@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 from fastapi import APIRouter
 
 from api.utils.airflow import (
+    PipelineHealth,
     PipelineRun,
     PipelineStatus,
     get_airflow,
@@ -22,17 +23,20 @@ def get_dag_run_status() -> dict:
 
     # only get the latest succesfull run
     latest_runs = {
-        id: next(run for run in get_dag_dagruns(id) if run.state == "success")
+        id: next((run for run in get_dag_dagruns(id) if run.state == "success"), None)
         for id in dag_ids
     }
 
     for dag_id, run in latest_runs.items():
-        update_run_health(dag_id, run)
+        # pipeline could also _not_ have run yet..
+        if run:
+            update_run_health(dag_id, run)
 
     return {
         id: PipelineStatus(
-            last_completed=run.start_date,
-            health=run.health,
+            # if the pipeline never ran, use None/Unknown
+            last_completed=run.start_date if run else None,
+            health=run.health if run else PipelineHealth.UNKNOWN,
             schedule_interval=dag_list[id],
         )
         for id, run in latest_runs.items()
@@ -44,8 +48,8 @@ def get_dag_run_list_with_schedules() -> Dict[str, Optional[str]]:
     """Get the list of pipelines and their schedules"""
     return {
         d["dag_id"]: d["schedule_interval"]["value"]
-        if d["schedule_interval"] is not None
-        else None
+        # schedule interval is ignored if DAG is 'paused' (often manually)
+        if d["schedule_interval"] is not None and not d["is_paused"] else None
         for d in get_airflow("/dags")["dags"]
     }
 
