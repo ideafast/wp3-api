@@ -25,6 +25,8 @@ services:
       MONGO_INITDB_COLLECTION: ${_MONGO_INITDB_COLLECTION}
     ports:
       - '27017:27017'
+    expose:
+      - '27017'
     volumes:
       - mongo-db-volume:/data/db
       - ./init/mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro

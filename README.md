@@ -35,7 +35,7 @@ docker-compose -f example.docker-compose.yml up
 Open your browser and try out a few endpoints, e.g.
 - http://localhost/patients
 - http://localhost/patients/credentials/{participant_id}
-- http://localhost/docs/axivity
+- http://localhost/docs/AX6
 - http://localhost/status
 
 Trigger a pull for new docs for the GET /docs endpoint by running
