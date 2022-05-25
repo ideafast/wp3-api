@@ -10,7 +10,11 @@ from fastapi.responses import HTMLResponse
 router = APIRouter()
 
 CURRENT_DIR = Path(__file__).parent
+
+# I think the path below breaks on the server.
+# Perhaps we need: FILES_PATH = CURRENT_DIR / "api/docs/html"
 FILES_PATH = CURRENT_DIR / "docs/html"
+# FILES_PATH = "api/docs/html"
 
 
 class DEVICE(Enum):
@@ -22,12 +26,13 @@ class DEVICE(Enum):
     SMP = "SMP"
     WKS = "WKS"
     CTB = "CTB"
+    BED = "BED"
 
     # we also want to host documentation about software platforms
     UCAM = "UCAM"
     DMP = "DMP"
 
-    # referring to documentation about how to update this documentsion
+    # referring to documentation about how to update this documentation
     DOCS = "DOCS"
 
 

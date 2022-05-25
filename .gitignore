@@ -20,3 +20,6 @@ requirements.txt
 /api/docs
 /dist/*
 credentials.csv
+
+# we should just keep the example.docker-compose.yml file
+docker-compose.yml

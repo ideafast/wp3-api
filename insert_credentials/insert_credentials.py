@@ -6,6 +6,7 @@ import pymongo
 # myclient = pymongo.MongoClient("mongodb://colin:colin_pass@localhost:27017/")
 myclient = pymongo.MongoClient(
     host=os.getenv("_MONGO_INITDB_HOST"),
+    port=os.getenv("_MONGO_INITDB_PORT"),
     username=os.getenv("_MONGO_INITDB_ROOT_USERNAME"),
     password=os.getenv("_MONGO_INITDB_ROOT_PASSWORD"),
 )

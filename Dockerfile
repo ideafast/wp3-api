@@ -12,3 +12,4 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY ./scripts /app
 COPY ./api /app/api
+COPY ./insert_credentials /app/insert_credentials
