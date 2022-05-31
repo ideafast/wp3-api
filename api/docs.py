@@ -14,6 +14,7 @@ CURRENT_DIR = Path(__file__).parent
 # I think the path below breaks on the server.
 # Perhaps we need: FILES_PATH = CURRENT_DIR / "api/docs/html"
 FILES_PATH = CURRENT_DIR / "docs/html"
+MD_PATH = CURRENT_DIR / "docs/docs"
 # FILES_PATH = "api/docs/html"
 
 
@@ -46,6 +47,16 @@ def load_doc(device: DEVICE, type: str = "docs") -> str:
         raise HTTPException(status_code=500, detail="File not found") from e
 
 
+def load_md_doc(device: DEVICE, type: str = "docs") -> str:
+    """Read the requested file into memory and return markdown"""
+    try:
+        with codecs.open(f"{MD_PATH}/{device.name}.md", "r") as f:
+            content = f.read()
+            return content
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail="File not found") from e
+
+
 def retrieve_latest_docs() -> None:
     """Run shell script to pull latest changes to the DOC/FAQ repo"""
     subprocess.run(["git", "-C", "api/docs/", "pull"])  # noqa
@@ -72,5 +83,17 @@ def device(device: DEVICE) -> str:
 
 @router.get("/{device}/faq", response_class=HTMLResponse)
 def faq(device: DEVICE) -> str:
-    """Get list of FAQ from device documentation"""
+    """Get FAQ about the device"""
     return load_doc(device, "faq")
+
+
+@router.get("/{device}/md", response_class=HTMLResponse)
+def device(device: DEVICE) -> str:
+    """Get information about the device documentation - served as markdown"""
+    return load_md_doc(device)
+
+
+# @router.get("/{device}/md/faq", response_class=HTMLResponse)
+# def faq(device: DEVICE) -> str:
+#     """Get FAQ about the device - served as markdown"""
+#     return load_md_doc(device, "faq")
